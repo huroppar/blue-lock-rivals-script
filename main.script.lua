@@ -4,10 +4,12 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 --// プレイヤー取得とnil対策
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-while not LocalPlayer do
-    Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
+while not LocalPlayer or not LocalPlayer.Name do
+    task.wait()
     LocalPlayer = Players.LocalPlayer
 end
+
+local localUsername = LocalPlayer.Name
 
 --// 複数ユーザー許可リスト
 local allowedUsers = {
