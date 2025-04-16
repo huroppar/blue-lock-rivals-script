@@ -1,40 +1,40 @@
 -- OrionLibの読み込み
-local OrionLib = loadstring(game:HttpGet("https://pastebin.com/raw/WRUyYTdY"))()
+local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
 
--- プレイヤー確認
+-- プレイヤーとサービスの取得
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+
+-- 認証設定
 local allowedUser = "Furoppersama"
 local authKey = "Masashi0407"
+local isAuthenticated = false
 
 -- GUI作成
 local Window = OrionLib:MakeWindow({
-    Name = "🏀 Basketball Script | by Masashi",
+    Name = "Blue Lock Rivals GUI | by Masashi",
     HidePremium = false,
     SaveConfig = true,
-    ConfigFolder = "MasashiBasketball"
+    ConfigFolder = "MasashiBlueLock"
 })
 
 -- 認証チェック
 if LocalPlayer.Name ~= allowedUser then
-    OrionLib:MakeNotification({
-        Name = "認証システム",
-        Content = "キーを入力してください。",
-        Image = "rbxassetid://4483345998",
-        Time = 5
+    local AuthTab = Window:MakeTab({
+        Name = "🔑 認証",
+        Icon = "rbxassetid://4483345998",
+        PremiumOnly = false
     })
 
-    OrionLib:MakeWindow({
-        Name = "キー認証",
-        HidePremium = false,
-        IntroEnabled = false,
-        SaveConfig = false
-    }):AddTextbox({
+    AuthTab:AddTextbox({
         Name = "キーを入力",
         Default = "",
         TextDisappear = true,
         Callback = function(text)
             if text == authKey then
+                isAuthenticated = true
                 OrionLib:MakeNotification({
                     Name = "成功",
                     Content = "認証成功！",
@@ -54,6 +54,7 @@ if LocalPlayer.Name ~= allowedUser then
         end
     })
 else
+    isAuthenticated = true
     OrionLib:MakeNotification({
         Name = "スキップ",
         Content = "Furoppersamaのため認証スキップ！",
@@ -62,68 +63,83 @@ else
     })
 end
 
--- メインタブ
-local Tab = Window:MakeTab({
-    Name = "メイン",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
+-- メインタブ（認証後に表示）
+if isAuthenticated then
+    local MainTab = Window:MakeTab({
+        Name = "⚽ メイン",
+        Icon = "rbxassetid://4483345998",
+        PremiumOnly = false
+    })
 
--- スピードスライダー＆手入力
-Tab:AddTextbox({
-    Name = "スピード（手入力）",
-    Default = "16",
-    TextDisappear = false,
-    Callback = function(value)
-        local num = tonumber(value)
-        if num and num >= 1 and num <= 500 then
-            LocalPlayer.Character.Humanoid.WalkSpeed = num
+    -- スピードスライダー＆手入力
+    MainTab:AddTextbox({
+        Name = "スピード（手入力）",
+        Default = "16",
+        TextDisappear = false,
+        Callback = function(value)
+            local num = tonumber(value)
+            if num and num >= 1 and num <= 500 then
+                LocalPlayer.Character.Humanoid.WalkSpeed = num
+            end
         end
-    end
-})
+    })
 
-Tab:AddSlider({
-    Name = "スピードスライダー",
-    Min = 1,
-    Max = 500,
-    Default = 16,
-    Increment = 1,
-    ValueName = "Speed",
-    Callback = function(value)
-        LocalPlayer.Character.Humanoid.WalkSpeed = value
-    end
-})
-
--- スタミナ無限（毎フレーム満タンに）
-local infiniteStamina = false
-Tab:AddToggle({
-    Name = "スタミナ無限",
-    Default = false,
-    Callback = function(bool)
-        infiniteStamina = bool
-        while infiniteStamina do
-            pcall(function()
-                -- 仮のスタミナプロパティ（ゲームにより変わる）
-                LocalPlayer.Character.Stamina.Value = 100 -- ←ここは環境によって要調整
-            end)
-            task.wait(0.1)
+    MainTab:AddSlider({
+        Name = "スピードスライダー",
+        Min = 1,
+        Max = 500,
+        Default = 16,
+        Increment = 1,
+        ValueName = "Speed",
+        Callback = function(value)
+            LocalPlayer.Character.Humanoid.WalkSpeed = value
         end
-    end
-})
+    })
 
--- 自動ゴール
-Tab:AddButton({
-    Name = "自動ゴール",
-    Callback = function()
-        local goalPosition = Vector3.new(100, 10, 50) -- ←ここにゴールの座標入れて
-        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-        char:MoveTo(goalPosition)
+    -- スタミナ無限（サーバーとの通信を利用）
+    local infiniteStamina = false
+    MainTab:AddToggle({
+        Name = "スタミナ無限",
+        Default = false,
+        Callback = function(bool)
+            infiniteStamina = bool
+            while infiniteStamina do
+                local args = { [1] = 0/0 }
+                local success, err = pcall(function()
+                    ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("StaminaService"):WaitForChild("RE"):WaitForChild("DecreaseStamina"):FireServer(unpack(args))
+                end)
+                if not success then
+                    warn("スタミナ無限化に失敗しました:", err)
+                end
+                task.wait(0.1)
+            end
+        end
+    })
 
-        task.wait(1.5) -- 移動完了待ち（必要なら調整）
+    -- 自動ゴール
+    MainTab:AddButton({
+        Name = "自動ゴール",
+        Callback = function()
+            local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+            local rootPart = character:WaitForChild("HumanoidRootPart")
+            local goalPosition = Vector3.new(325, 20, -49) -- ゴールの座標を適宜変更
+            rootPart.CFrame = CFrame.new(goalPosition)
+            task.wait(1.5) -- 移動完了待ち
 
-        -- シュート処理（ここも環境に合わせて調整）
-        -- 例: fireproximityprompt(char:FindFirstChild("ShootPrompt"))
-    end
-})
+            -- シュート処理
+            local ballServiceRemote = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("BallService"):WaitForChild("RE"):WaitForChild("Shoot")
+            local args = {
+                [1] = {
+                    ["Power"] = 100,
+                    ["Curve"] = 0,
+                    ["Vertical"] = 0,
+                    ["Auto"] = true
+                }
+            }
+            ballServiceRemote:FireServer(unpack(args))
+        end
+    })
+end
 
 OrionLib:Init()
+
