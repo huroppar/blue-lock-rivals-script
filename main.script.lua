@@ -1,6 +1,10 @@
 --// ローダー準備
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
+if not Rayfield then
+    warn("❌ Rayfieldの読み込みに失敗しました")
+    return
+end
 --// プレイヤー取得とnil対策
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
