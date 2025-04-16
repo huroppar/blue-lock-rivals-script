@@ -1,41 +1,13 @@
---// ローダー準備
+--// Rayfieldの読み込み
 local Rayfield = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Rayfield/main/source.lua"))()
 
-if not Rayfield then
-    warn("❌ Rayfieldの読み込みに失敗しました")
-    return
-end
+--// プレイヤー名の取得（nil対策）
+local localPlayer = game.Players.LocalPlayer
+local localUsername = (localPlayer and localPlayer.Name) or "UnknownPlayer"
 
---// プレイヤー取得とnil対策
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-while not LocalPlayer or not LocalPlayer.Name do
-    task.wait()
-    LocalPlayer = Players.LocalPlayer
-end
-
-local localUsername = LocalPlayer.Name
-
---// 複数ユーザー許可リスト
-local allowedUsers = {
-    ["Furoppersama"] = true,
-    ["MyOtherUser"] = true,
-    ["BestFriend123"] = true,
-}
-
-local correctKey = "Masashi0407"
-local isAuthenticated = false
-
---// 自動認証 or キー認証切替
-if allowedUsers[localUsername] then
-    isAuthenticated = true
-    warn("✅ ユーザー認証済み：「" .. localUsername .. "」")
-else
-    warn("⚠️ ユーザー名「" .. localUsername .. "」は登録されていません。キー認証が必要です。")
-end
---// UI生成（ここでも保険をかけておく）
+--// UI生成
 local Window = Rayfield:CreateWindow({
-    Name = "Blue Lock RIVAL GUI | " .. (localUsername or "UnknownUser"),
+    Name = "Blue Lock RIVAL GUI | " .. localUsername,
     LoadingTitle = "Blue Lock 起動中...",
     LoadingSubtitle = "By Masashi",
     ConfigurationSaving = {
@@ -46,6 +18,11 @@ local Window = Rayfield:CreateWindow({
     },
     KeySystem = false
 })
+
+--// 認証フラグ（仮の変数：あとで上書き or 認証処理で更新）
+local isAuthenticated = (localUsername == "Furoppersama") -- ここは例として書き換え可能
+local correctKey = "masashi123" -- 任意のキーを設定してね
+
 --// 認証用タブ
 local AuthTab = Window:CreateTab("🔑 認証")
 
@@ -76,7 +53,6 @@ if not isAuthenticated then
         end
     })
 end
-
 --// 認証後に使える機能
 task.spawn(function()
     while not isAuthenticated do task.wait(0.5) end
