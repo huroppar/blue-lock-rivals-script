@@ -1,31 +1,30 @@
 --// ローダー準備
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Rayfield = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Rayfield/main/source.lua"))()
 
 if not Rayfield then
     warn("❌ Rayfieldの読み込みに失敗しました")
     return
 end
+
 --// プレイヤー取得とnil対策
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-
 while not LocalPlayer or not LocalPlayer.Name do
     task.wait()
     LocalPlayer = Players.LocalPlayer
 end
 
-local localUsername = LocalPlayer and LocalPlayer.Name or "UnknownUser" -- ← ここが大事！
+local localUsername = LocalPlayer.Name
+
 --// 複数ユーザー許可リスト
 local allowedUsers = {
     ["Furoppersama"] = true,
     ["MyOtherUser"] = true,
     ["BestFriend123"] = true,
-    -- ↑ここに追加すれば他の人も許可できる
 }
 
 local correctKey = "Masashi0407"
 local isAuthenticated = false
-local localUsername = LocalPlayer.Name or "Unknown"
 
 --// 自動認証 or キー認証切替
 if allowedUsers[localUsername] then
@@ -34,7 +33,6 @@ if allowedUsers[localUsername] then
 else
     warn("⚠️ ユーザー名「" .. localUsername .. "」は登録されていません。キー認証が必要です。")
 end
-
 --// UI生成（ここでも保険をかけておく）
 local Window = Rayfield:CreateWindow({
     Name = "Blue Lock RIVAL GUI | " .. (localUsername or "UnknownUser"),
