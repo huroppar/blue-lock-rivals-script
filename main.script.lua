@@ -1,19 +1,26 @@
 --// ローダー準備
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
---// 認証情報
-local correctUsername = "I_loveMidori"
+--// 複数ユーザー許可リスト
+local allowedUsers = {
+    ["Furoppersama"] = true,
+    ["MyOtherUser"] = true,
+    ["BestFriend123"] = true,
+    -- ↑ここに追加すれば他の人も許可できる
+}
+
 local correctKey = "Masashi0407"
 local isAuthenticated = false
 
 --// 自動認証 or キー認証切替
-if game.Players.LocalPlayer.Name == correctUsername then
-    isAuthenticated = true
-    warn("✅ ユーザー名一致：自動認証成功")
-else
-    warn("⚠️ ユーザー名が一致しません。キー認証が必要です。")
-end
+local localUsername = game.Players.LocalPlayer.Name
 
+if allowedUsers[localUsername] then
+    isAuthenticated = true
+    warn("✅ ユーザー認証済み：「" .. localUsername .. "」")
+else
+    warn("⚠️ ユーザー名「" .. localUsername .. "」は登録されていません。キー認証が必要です。")
+end
 --// UI生成
 local Window = Rayfield:CreateWindow({
    Name = "Blue Lock RIVAL GUI | Masashi Edition",
