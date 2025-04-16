@@ -1,5 +1,5 @@
 -- OrionLibの読み込み
-local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
+local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/wploits/critclhub/main/bluelockrivals.lua"))()
 
 -- プレイヤーとサービスの取得
 local Players = game:GetService("Players")
