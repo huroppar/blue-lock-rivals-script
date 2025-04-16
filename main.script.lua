@@ -1,20 +1,27 @@
 --// ローダー準備
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer or Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
-
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+--// プレイヤー取得とnil対策
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+while not LocalPlayer do
+    Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
+    LocalPlayer = Players.LocalPlayer
+end
 
 --// 複数ユーザー許可リスト
 local allowedUsers = {
     ["Furoppersama"] = true,
     ["MyOtherUser"] = true,
     ["BestFriend123"] = true,
+    -- ↑ここに追加すれば他の人も許可できる
 }
 
 local correctKey = "Masashi0407"
 local isAuthenticated = false
-local localUsername = LocalPlayer and LocalPlayer.Name or "Unknown"
+local localUsername = LocalPlayer.Name or "Unknown"
 
+--// 自動認証 or キー認証切替
 if allowedUsers[localUsername] then
     isAuthenticated = true
     warn("✅ ユーザー認証済み：「" .. localUsername .. "」")
@@ -38,6 +45,7 @@ local Window = Rayfield:CreateWindow({
 
 --// 認証用タブ
 local AuthTab = Window:CreateTab("🔑 認証")
+
 --// 機能用タブ（認証後に表示）
 local MainTab = Window:CreateTab("⚽ 機能")
 
@@ -70,13 +78,14 @@ end
 task.spawn(function()
     while not isAuthenticated do task.wait(0.5) end
 
+    -- GUI機能追加
     MainTab:CreateSlider({
         Name = "移動速度",
         Range = {16, 100},
         Increment = 1,
         CurrentValue = 16,
         Callback = function(Value)
-            LocalPlayer.Character.Humanoid.WalkSpeed = Value
+            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
         end
     })
 
@@ -84,8 +93,9 @@ task.spawn(function()
         Name = "スタミナ無限",
         CurrentValue = false,
         Callback = function(Value)
+            local player = game.Players.LocalPlayer
             while Value and task.wait(0.1) do
-                local stamina = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Stamina")
+                local stamina = player.Character and player.Character:FindFirstChild("Stamina")
                 if stamina and stamina:IsA("NumberValue") then
                     stamina.Value = stamina.MaxValue or 100
                 end
@@ -96,7 +106,8 @@ task.spawn(function()
     MainTab:CreateButton({
         Name = "自動ゴール機能（実験）",
         Callback = function()
-            local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+            local player = game.Players.LocalPlayer
+            local char = player.Character or player.CharacterAdded:Wait()
             local goal = workspace:FindFirstChild("Goal") or workspace:FindFirstChild("GoalPost")
             if goal then
                 char:MoveTo(goal.Position + Vector3.new(0, 3, 0))
@@ -114,4 +125,5 @@ task.spawn(function()
             end
         end
     })
+
 end)
