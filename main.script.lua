@@ -4,13 +4,13 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 --// プレイヤー取得とnil対策
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
+
 while not LocalPlayer or not LocalPlayer.Name do
     task.wait()
     LocalPlayer = Players.LocalPlayer
 end
 
-local localUsername = LocalPlayer.Name
-
+local localUsername = LocalPlayer and LocalPlayer.Name or "UnknownUser" -- ← ここが大事！
 --// 複数ユーザー許可リスト
 local allowedUsers = {
     ["Furoppersama"] = true,
@@ -31,9 +31,9 @@ else
     warn("⚠️ ユーザー名「" .. localUsername .. "」は登録されていません。キー認証が必要です。")
 end
 
---// UI生成
+--// UI生成（ここでも保険をかけておく）
 local Window = Rayfield:CreateWindow({
-    Name = "Blue Lock RIVAL GUI | " .. localUsername,
+    Name = "Blue Lock RIVAL GUI | " .. (localUsername or "UnknownUser"),
     LoadingTitle = "Blue Lock 起動中...",
     LoadingSubtitle = "By Masashi",
     ConfigurationSaving = {
@@ -44,7 +44,6 @@ local Window = Rayfield:CreateWindow({
     },
     KeySystem = false
 })
-
 --// 認証用タブ
 local AuthTab = Window:CreateTab("🔑 認証")
 
