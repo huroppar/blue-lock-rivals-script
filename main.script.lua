@@ -1,105 +1,59 @@
--- OrionLibの読み込み
+--// GUIセットアップ
 local OrionLib = loadstring(game:HttpGet("https://pastebin.com/raw/WRUyYTdY"))()
+local Window = OrionLib:MakeWindow({Name="⚽ Soccer Hacks - by Masashi", HidePremium=false, IntroText="Loading...", SaveConfig=true, ConfigFolder="SoccerHax"})
 
--- 必要なサービスと変数
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local LocalPlayer = Players.LocalPlayer
+--// タブとセクション
+local mainTab = Window:MakeTab({Name="Main", Icon="⚡", PremiumOnly=false})
+local toggles = {Stamina=false, AutoGoal=false}
 
--- GUIウィンドウ
-local Window = OrionLib:MakeWindow({
-    Name = "Blue Lock Rivals GUI | by Masashi",
-    HidePremium = false,
-    SaveConfig = true,
-    ConfigFolder = "MasashiBlueLock"
-})
+--// スタミナ無限処理
+local function startStaminaHack()
+    task.spawn(function()
+        while toggles.Stamina do
+            local char = game.Players.LocalPlayer.Character
+            local head = char and char:FindFirstChild("Head")
+            local stam = head and head:FindFirstChild("OutOfStamina")
+            if stam then stam:Destroy() end
+            task.wait(0.1)
+        end
+    end)
+end
 
--- 速度制御用変数
-local customSpeed = 16
-local speedEnabled = false
+--// 自動ゴール処理
+local function startAutoGoal()
+    local ballName = "Football" -- ゲームによって調整
+    task.spawn(function()
+        while toggles.AutoGoal do
+            local ball = workspace:FindFirstChild(ballName)
+            local goals = workspace:FindFirstChild("Goals") or workspace:FindFirstChild("Goal") or workspace:FindFirstChild("GoalBox")
+            if ball and goals then
+                for _,v in pairs(goals:GetDescendants()) do
+                    if v:IsA("BasePart") then
+                        ball.Position = v.Position + Vector3.new(0, 1, 0) -- ゴールに向かわせる
+                        break
+                    end
+                end
+            end
+            task.wait(0.3)
+        end
+    end)
+end
 
--- スタミナ制御用変数
-local infiniteStamina = false
-
--- メインタブ
-local MainTab = Window:MakeTab({
-    Name = "⚙️ 機能",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
-
--- スピードスライダー
-MainTab:AddSlider({
-    Name = "移動スピード（1〜500）",
-    Min = 1,
-    Max = 500,
-    Default = 16,
-    Increment = 1,
-    ValueName = "Speed",
-    Callback = function(value)
-        customSpeed = value
-    end
-})
-
-MainTab:AddToggle({
-    Name = "スピード適用ON/OFF",
-    Default = false,
-    Callback = function(state)
-        speedEnabled = state
-    end
-})
-
--- スタミナ無限トグル
-MainTab:AddToggle({
+--// GUIトグル追加
+mainTab:AddToggle({
     Name = "スタミナ無限",
     Default = false,
-    Callback = function(bool)
-        infiniteStamina = bool
+    Callback = function(v)
+        toggles.Stamina = v
+        if v then startStaminaHack() end
     end
 })
 
--- 自動ゴール機能
-MainTab:AddButton({
-    Name = "自動ゴール",
-    Callback = function()
-        local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-        local rootPart = character:WaitForChild("HumanoidRootPart")
-        local goalPosition = Vector3.new(325, 20, -49)
-        rootPart.CFrame = CFrame.new(goalPosition)
-        task.wait(1.5)
-
-        local shoot = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("BallService"):WaitForChild("RE"):WaitForChild("Shoot")
-        local args = {
-            [1] = {
-                ["Power"] = 100,
-                ["Curve"] = 0,
-                ["Vertical"] = 0,
-                ["Auto"] = true
-            }
-        }
-        shoot:FireServer(unpack(args))
+mainTab:AddToggle({
+    Name = "自動ゴール送り",
+    Default = false,
+    Callback = function(v)
+        toggles.AutoGoal = v
+        if v then startAutoGoal() end
     end
 })
-
--- スピードとスタミナの実行処理（毎フレームチェック）
-RunService.RenderStepped:Connect(function()
-    local char = LocalPlayer.Character
-    if char then
-        local humanoid = char:FindFirstChildOfClass("Humanoid")
-        if humanoid and speedEnabled then
-            humanoid.WalkSpeed = customSpeed
-        end
-    end
-
-    if infiniteStamina then
-        local success, err = pcall(function()
-            ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("StaminaService"):WaitForChild("RE"):WaitForChild("DecreaseStamina"):FireServer(0)
-        end)
-        if not success then
-            warn("スタミナ無限失敗: " .. tostring(err))
-        end
-    end
-end)
-
-OrionLib:Init()
