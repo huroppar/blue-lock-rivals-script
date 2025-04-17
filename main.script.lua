@@ -1,18 +1,17 @@
--- OrionLibの読み込み
-local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/wploits/critclhub/main/bluelockrivals.lua"))()
+-- OrionLibの読み込み（置き換え済み）
+local OrionLib = loadstring(game:HttpGet("https://pastebin.com/raw/WRUyYTdY"))()
 
 -- プレイヤーとサービスの取得
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Workspace = game:GetService("Workspace")
 
 -- 認証設定
 local allowedUser = "Furoppersama"
 local authKey = "Masashi0407"
 local isAuthenticated = false
 
--- GUI作成
+-- GUIウィンドウ作成
 local Window = OrionLib:MakeWindow({
     Name = "Blue Lock Rivals GUI | by Masashi",
     HidePremium = false,
@@ -20,7 +19,7 @@ local Window = OrionLib:MakeWindow({
     ConfigFolder = "MasashiBlueLock"
 })
 
--- 認証チェック
+-- 認証処理
 if LocalPlayer.Name ~= allowedUser then
     local AuthTab = Window:MakeTab({
         Name = "🔑 認証",
@@ -63,7 +62,7 @@ else
     })
 end
 
--- メインタブ（認証後に表示）
+-- メインタブ
 if isAuthenticated then
     local MainTab = Window:MakeTab({
         Name = "⚽ メイン",
@@ -71,7 +70,6 @@ if isAuthenticated then
         PremiumOnly = false
     })
 
-    -- スピードスライダー＆手入力
     MainTab:AddTextbox({
         Name = "スピード（手入力）",
         Default = "16",
@@ -96,7 +94,6 @@ if isAuthenticated then
         end
     })
 
-    -- スタミナ無限（サーバーとの通信を利用）
     local infiniteStamina = false
     MainTab:AddToggle({
         Name = "スタミナ無限",
@@ -116,18 +113,16 @@ if isAuthenticated then
         end
     })
 
-    -- 自動ゴール
     MainTab:AddButton({
         Name = "自動ゴール",
         Callback = function()
             local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
             local rootPart = character:WaitForChild("HumanoidRootPart")
-            local goalPosition = Vector3.new(325, 20, -49) -- ゴールの座標を適宜変更
+            local goalPosition = Vector3.new(325, 20, -49)
             rootPart.CFrame = CFrame.new(goalPosition)
-            task.wait(1.5) -- 移動完了待ち
+            task.wait(1.5)
 
-            -- シュート処理
-            local ballServiceRemote = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("BallService"):WaitForChild("RE"):WaitForChild("Shoot")
+            local shoot = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("BallService"):WaitForChild("RE"):WaitForChild("Shoot")
             local args = {
                 [1] = {
                     ["Power"] = 100,
@@ -136,10 +131,9 @@ if isAuthenticated then
                     ["Auto"] = true
                 }
             }
-            ballServiceRemote:FireServer(unpack(args))
+            shoot:FireServer(unpack(args))
         end
     })
 end
 
 OrionLib:Init()
-
