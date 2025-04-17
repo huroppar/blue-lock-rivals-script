@@ -1,5 +1,5 @@
 -- GUIライブラリ読み込み
-local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
+local OrionLib = loadstring(game:HttpGet("https://pastebin.com/raw/WRUyYTdY"))()
 local Window = OrionLib:MakeWindow({Name = "Blue Lock Script", HidePremium = false, SaveConfig = false, IntroEnabled = false})
 
 local ToggleValues = {
