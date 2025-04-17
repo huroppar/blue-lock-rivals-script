@@ -1,71 +1,68 @@
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local lp = Players.LocalPlayer
+-- GUIライブラリ読み込み
+local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
+local Window = OrionLib:MakeWindow({Name = "Blue Lock Script", HidePremium = false, SaveConfig = false, IntroEnabled = false})
 
--- GUI準備
-local OrionLib = loadstring(game:HttpGet("https://pastebin.com/raw/WRUyYTdY"))()
-local Window = OrionLib:MakeWindow({Name = "⚽ Soccer Hacks - Masashi", SaveConfig = true, ConfigFolder = "SoccerAuto"})
+local ToggleValues = {
+    Stamina = false,
+    AutoGoal = false,
+}
 
-local MainTab = Window:MakeTab({Name = "Main", Icon = "🏃", PremiumOnly = false})
-local ToggleValues = {Stamina = false, AutoGoal = false}
-
--- スタミナ無限処理
-local function StaminaLoop()
-    while ToggleValues.Stamina do
-        local char = lp.Character
-        local staminaFlag = char and char:FindFirstChild("OutOfStamina", true)
-        if staminaFlag then
-            staminaFlag:Destroy()
+-- スタミナ無限の処理
+task.spawn(function()
+    while true do
+        if ToggleValues.Stamina then
+            local char = game.Players.LocalPlayer.Character
+            local staminaFlag = char and char:FindFirstChild("OutOfStamina", true)
+            if staminaFlag then
+                staminaFlag:Destroy()
+            end
         end
         task.wait(0.1)
     end
-end
+end)
 
--- 敵ゴール判定してボール移動
-local function AutoGoalLoop()
-    while ToggleValues.AutoGoal do
-        local ball = workspace:FindFirstChild("Football") or workspace:FindFirstChild("Ball")
-        local goals = workspace:FindFirstChild("Goals")
-        local char = lp.Character
-        if not (ball and goals and char) then task.wait(0.3) continue end
+-- 自動ゴールの処理
+task.spawn(function()
+    while true do
+        if ToggleValues.AutoGoal then
+            local lp = game.Players.LocalPlayer
+            local ball = workspace:FindFirstChild("Football") or workspace:FindFirstChild("Ball")
+            local goals = workspace:FindFirstChild("Goals")
+            local char = lp.Character
+            if not (ball and goals and char) then task.wait(0.3) continue end
 
-        local team = lp.Team and lp.Team.Name
-        local goalTarget = nil
+            local team = lp.Team and lp.Team.Name
+            local goalTarget = nil
 
-        if team == "Red" then
-            goalTarget = goals:FindFirstChild("Goal1")
-        elseif team == "Blue" then
-            goalTarget = goals:FindFirstChild("Goal2")
+            if team == "Red" then
+                goalTarget = goals:FindFirstChild("Goal2") -- 敵ゴール
+            elseif team == "Blue" then
+                goalTarget = goals:FindFirstChild("Goal1")
+            end
+
+            if goalTarget and ball:IsA("BasePart") then
+                ball.CFrame = CFrame.new(goalTarget.Position + Vector3.new(0, 1, 0))
+            end
         end
-
-        if goalTarget and ball:IsA("BasePart") then
-            -- ボールをゴール位置へ少しずつ移動
-            ball.CFrame = CFrame.new(goalTarget.Position + Vector3.new(0, 1, 0))
-        end
-
-        task.wait(0.3)
+        task.wait(0.5)
     end
-end
+end)
 
--- トグル設定
-MainTab:AddToggle({
-    Name = "スタミナ無限",
+-- GUIにトグルを追加
+local Tab = Window:MakeTab({Name = "メイン", Icon = "rbxassetid://4483345998", PremiumOnly = false})
+
+Tab:AddToggle({
+    Name = "🧃スタミナ無限",
     Default = false,
-    Callback = function(value)
-        ToggleValues.Stamina = value
-        if value then
-            task.spawn(StaminaLoop)
-        end
+    Callback = function(Value)
+        ToggleValues.Stamina = Value
     end
 })
 
-MainTab:AddToggle({
-    Name = "自動ゴール",
+Tab:AddToggle({
+    Name = "⚽自動ゴール",
     Default = false,
-    Callback = function(value)
-        ToggleValues.AutoGoal = value
-        if value then
-            task.spawn(AutoGoalLoop)
-        end
+    Callback = function(Value)
+        ToggleValues.AutoGoal = Value
     end
 })
